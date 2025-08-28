@@ -34,12 +34,10 @@ wss.on("connection", (ws) => {
 
         // If 2 users, notify them
         if (users.length === 2) {
-          users.forEach((client) => {
-            if (client.readyState === client.OPEN) {
-              client.send(
-                JSON.stringify({ type: "ready", msg: "Peer found" })
-              );
-            }
+          users.forEach((client, i) => {
+            client.send(
+              JSON.stringify({ type: "ready", msg: "Peer found" })
+            );
           });
         }
         break;
@@ -47,7 +45,7 @@ wss.on("connection", (ws) => {
       case "offer":
       case "answer":
       case "candidate":
-        // Relay message to the other peer
+        // Relay message to other peer
         users.forEach((client) => {
           if (client !== ws && client.readyState === ws.OPEN) {
             client.send(JSON.stringify(data));
@@ -59,15 +57,7 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     console.log("Client disconnected");
-    // Remove the closed connection
     users = users.filter((u) => u !== ws);
-
-    // Notify remaining peers that one left
-    users.forEach((client) => {
-      if (client.readyState === client.OPEN) {
-        client.send(JSON.stringify({ type: "peer-left" }));
-      }
-    });
   });
 });
 
